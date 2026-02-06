@@ -288,30 +288,12 @@ MIT License - feel free to use commercially.
 
 ## Why This Exists
 
-Every "llama.cpp vs vLLM" blog post uses different hardware, different models, different metrics. It's impossible to compare.
 
 llamabench standardizes the methodology so you can:
 1. Make informed decisions for your use case
 2. Cite consistent benchmark numbers
 3. Stop wasting time on custom benchmark scripts
 
-## FAQ
 
-**Q: Do I need a GPU?**  
-A: No, but recommended for vLLM. llama.cpp and Ollama work great on CPU.
-
-**Q: How long does a benchmark take?**  
-A: ~5-10 minutes depending on concurrency levels and duration settings.
-
-**Q: Can I benchmark custom models?**  
-A: Not yet in v0.1, but coming soon!
-
-**Q: Why are my results different from blog post X?**  
-A: Different hardware, model versions, or testing methodology. Run llamabench on the same hardware to get comparable numbers.
-
-**Q: Can I run this in CI/CD?**  
-A: Yes! Use `--output results.json` and parse the JSON for regression testing.
-
----
 
 Built with ❤️ because comparing LLM inference engines shouldn't take a full day.
