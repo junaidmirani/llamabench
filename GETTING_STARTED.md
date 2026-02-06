@@ -181,44 +181,8 @@ python llamabench.py run \
 cat ci_results.json | jq '.benchmarks[0].metrics.tokens_per_sec'
 ```
 
-## Launch Strategy
 
-### Week 1-2: Code Completion
-- [ ] Implement real HTTP benchmarking
-- [ ] Add Docker auto-setup
-- [ ] Test on actual hardware (CPU + GPU)
-- [ ] Fix any bugs
-
-### Week 3: Polish
-- [ ] Add unit tests
-- [ ] Improve documentation
-- [ ] Record demo video
-- [ ] Create comparison charts vs manual benchmarking
-
-### Week 4: Launch
-- [ ] Post on Hacker News with title: "llamabench – Stop wasting days comparing llama.cpp vs vLLM"
-- [ ] Share on Reddit r/LocalLLaMA
-- [ ] Tweet about it, tag relevant people
-- [ ] Submit to awesome-llm lists
-
-### Post-Launch
-- [ ] Respond to issues quickly
-- [ ] Accept good PRs
-- [ ] Build community around it
-- [ ] Start consulting/support business once it's established
-
-## Monetization Path
-
-### Free Tier (Always)
-- Open source CLI tool
-- All core features
-- Community support
-
-### Paid Offerings (After 6-12 months)
-- **Pro Support**: Priority support for teams ($500-1000/month)
-- **Consulting**: Help teams optimize their deployments ($200-300/hour)
-- **Enterprise**: Custom benchmarks, private deployments ($5k-20k/project)
-- **Training**: Workshops on LLM deployment ($2k-5k/session)
+: Workshops on LLM deployment ($2k-5k/session)
 
 ## Directory Structure
 
@@ -251,13 +215,4 @@ MIT - Use it however you want!
 
 ---
 
-**Next Steps:**
 
-1. Test the tool locally
-2. Implement real benchmarking (replace mocks)
-3. Share on social media
-4. Build community
-5. Help people benchmark their setups
-6. Watch it become the standard citation
-
-**You now have everything you need to launch llamabench. Go make it happen! 🚀**
