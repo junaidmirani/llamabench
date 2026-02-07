@@ -193,54 +193,50 @@ class BenchmarkRunner:
         """Stop and cleanup an engine"""
         pass
     
-    def _run_benchmark(self, engine: str, concurrency: int) -> Dict[str, Any]:
+   def _run_benchmark(self, engine: str, concurrency: int) -> Dict[str, Any]:
         """Run benchmark for a specific engine and concurrency level"""
         
-        # Try real benchmarking if available
-        if REAL_BENCHMARKING_AVAILABLE:
-            try:
-                # Get engine config
-                config = ENGINE_CONFIGS[engine]
-                base_url = f"http://localhost:{config['port']}"
-                
-                # Run real benchmark
-                real_results = run_benchmark_sync(
-                    engine=engine,
-                    base_url=base_url,
-                    model_name=self.model,
-                    prompts=self.prompts,
-                    concurrency=concurrency,
-                    duration=self.duration
-                )
-                
-                if real_results:
-                    # Get memory usage
-                    memory_mb = self._get_memory_usage()
-                    
-                    # Format results
-                    return {
-                        'engine': engine,
-                        'concurrency': concurrency,
-                        'duration': self.duration,
-                        'metrics': {
-                            'ttft_p50': real_results['ttft_p50'],
-                            'ttft_p95': real_results['ttft_p95'],
-                            'ttft_p99': real_results['ttft_p99'],
-                            'tokens_per_sec': real_results['tokens_per_sec'],
-                            'total_tokens': real_results['total_tokens'],
-                            'successful_requests': real_results['successful_requests'],
-                            'failed_requests': real_results['failed_requests'],
-                            'memory_mb': memory_mb,
-                            'cpu_percent': self._get_cpu_usage(),
-                        },
-                        'timestamp': datetime.utcnow().isoformat(),
-                        'real_data': True,
-                    }
-            except Exception as e:
-                print(f"  ⚠️  Real benchmark failed ({e}), falling back to mock data")
+        if not REAL_BENCHMARKING_AVAILABLE:
+            raise RuntimeError("Real benchmarking not available. Install: pip install aiohttp")
         
-        # Fallback to mock data
-        return self._generate_mock_result(engine, concurrency)
+        # Get engine config
+        config = ENGINE_CONFIGS[engine]
+        base_url = f"http://localhost:{config['port']}"
+        
+        # Run real benchmark
+        real_results = run_benchmark_sync(
+            engine=engine,
+            base_url=base_url,
+            model_name=self.model,
+            prompts=self.prompts,
+            concurrency=concurrency,
+            duration=self.duration
+        )
+        
+        if not real_results:
+            raise RuntimeError(f"{engine} is not responding on {base_url}. Is it running?")
+        
+        # Get memory usage
+        memory_mb = self._get_memory_usage()
+        
+        # Format results
+        return {
+            'engine': engine,
+            'concurrency': concurrency,
+            'duration': self.duration,
+            'metrics': {
+                'ttft_p50': real_results['ttft_p50'],
+                'ttft_p95': real_results['ttft_p95'],
+                'ttft_p99': real_results['ttft_p99'],
+                'tokens_per_sec': real_results['tokens_per_sec'],
+                'total_tokens': real_results['total_tokens'],
+                'successful_requests': real_results['successful_requests'],
+                'failed_requests': real_results['failed_requests'],
+                'memory_mb': memory_mb,
+                'cpu_percent': self._get_cpu_usage(),
+            },
+            'timestamp': datetime.utcnow().isoformat(),
+        }
     
     def _get_memory_usage(self) -> float:
         """Get current memory usage in MB"""
@@ -255,62 +251,4 @@ class BenchmarkRunner:
             return round(psutil.cpu_percent(interval=0.1), 1)
         return 75.0  # Default estimate
     
-    def _generate_mock_result(self, engine: str, concurrency: int) -> Dict[str, Any]:
-        """Generate realistic mock benchmark results"""
-        
-        # Realistic performance characteristics based on engine type
-        base_metrics = {
-            'llama.cpp': {
-                'ttft_base': 0.15,
-                'tokens_per_sec_base': 45,
-                'memory_mb_base': 4800,
-                'concurrency_penalty': 1.2,
-            },
-            'ollama': {
-                'ttft_base': 0.18,
-                'tokens_per_sec_base': 42,
-                'memory_mb_base': 5200,
-                'concurrency_penalty': 1.25,
-            },
-            'vllm': {
-                'ttft_base': 0.12,
-                'tokens_per_sec_base': 65,
-                'memory_mb_base': 6500,
-                'concurrency_penalty': 1.05,
-            },
-        }
-        
-        base = base_metrics[engine]
-        
-        # Adjust for concurrency (higher concurrency = slower per-request, but higher total throughput)
-        concurrency_factor = concurrency ** 0.3
-        ttft = base['ttft_base'] * (1 + (concurrency - 1) * 0.15)
-        tokens_per_sec = base['tokens_per_sec_base'] * concurrency / (concurrency_factor * base['concurrency_penalty'])
-        memory_mb = base['memory_mb_base'] * (1 + concurrency * 0.05)
-        
-        # Add some randomness for realism
-        ttft *= random.uniform(0.95, 1.05)
-        tokens_per_sec *= random.uniform(0.95, 1.05)
-        memory_mb *= random.uniform(0.98, 1.02)
-        
-        # Calculate derived metrics
-        total_tokens = int(tokens_per_sec * self.duration)
-        successful_requests = int(concurrency * self.duration / (ttft + 2.0))
-        
-        return {
-            'engine': engine,
-            'concurrency': concurrency,
-            'duration': self.duration,
-            'metrics': {
-                'ttft_p50': round(ttft, 3),
-                'ttft_p95': round(ttft * 1.3, 3),
-                'ttft_p99': round(ttft * 1.5, 3),
-                'tokens_per_sec': round(tokens_per_sec, 1),
-                'total_tokens': total_tokens,
-                'successful_requests': successful_requests,
-                'failed_requests': int(successful_requests * 0.01),  # 1% failure rate
-                'memory_mb': round(memory_mb, 0),
-                'cpu_percent': round(random.uniform(60, 95), 1),
-            },
-            'timestamp': datetime.utcnow().isoformat(),
-        }
+  
