@@ -5,6 +5,7 @@ Configuration for llamabench
 # Supported models with their metadata
 SUPPORTED_MODELS = {
     'llama-3.1-8b': {
+        'id': 'llama-3.1-8b',
         'name': 'Llama 3.1 8B',
         'size': '8B',
         'hf_repo': 'meta-llama/Meta-Llama-3.1-8B-Instruct',
@@ -14,6 +15,7 @@ SUPPORTED_MODELS = {
         'recommended_memory_gb': 6,
     },
     'mistral-7b': {
+        'id': 'mistral-7b',
         'name': 'Mistral 7B v0.3',
         'size': '7B',
         'hf_repo': 'mistralai/Mistral-7B-Instruct-v0.3',
@@ -23,6 +25,7 @@ SUPPORTED_MODELS = {
         'recommended_memory_gb': 5,
     },
     'qwen-2.5-7b': {
+        'id': 'qwen-2.5-7b',
         'name': 'Qwen 2.5 7B',
         'size': '7B',
         'hf_repo': 'Qwen/Qwen2.5-7B-Instruct',
