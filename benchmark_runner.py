@@ -181,11 +181,10 @@ class BenchmarkRunner:
     
     def _setup_engine(self, engine: str):
         """Setup and start an engine"""
-        config = ENGINE_CONFIGS[engine]
+        from engine_setup import EngineSetup
         
-        # For demo purposes, we'll simulate this
-        # In production, would actually start Docker containers
-        time.sleep(2)  # Simulate startup time
+        setup = EngineSetup()
+        setup.setup(engine, self.model)
     
     def _cleanup_engine(self, engine: str):
         """Stop and cleanup an engine"""
