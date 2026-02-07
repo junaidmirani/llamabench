@@ -25,7 +25,18 @@ def main():
     )
     
     subparsers = parser.add_subparsers(dest='command', help='Commands')
-    
+    setup_parser = subparsers.add_parser('setup', help='Setup and download engines/models')
+    setup_parser.add_argument(
+        '--engine',
+        required=True,
+        choices=['llama.cpp', 'ollama', 'all'],
+        help='Engine to setup'
+    )
+    setup_parser.add_argument(
+        '--model',
+        default='llama-3.1-8b',
+        help='Model to download'
+    )
     # Run benchmark command
     run_parser = subparsers.add_parser('run', help='Run benchmarks')
     run_parser.add_argument(
@@ -87,6 +98,8 @@ def main():
         list_models()
     elif args.command == 'compare':
         compare_results(args)
+    elif args.command == 'setup':
+        setup_engine(args)
     else:
         parser.print_help()
         sys.exit(1)
@@ -188,6 +201,26 @@ def compare_results(args):
     generator = ReportGenerator(results)
     generator.print_summary()
     generator.print_recommendation()
+
+def setup_engine(args):
+    """Setup and download engine"""
+    from engine_setup import EngineSetup
+    
+    setup = EngineSetup()
+    
+    if args.engine == 'all':
+        engines = ['llama.cpp', 'ollama']
+    else:
+        engines = [args.engine]
+    
+    for engine in engines:
+        print(f"\n🔧 Setting up {engine}...")
+        try:
+            setup.setup(engine, args.model)
+            print(f"✅ {engine} setup complete!")
+        except Exception as e:
+            print(f"❌ Setup failed: {e}")
+            sys.exit(1)
 
 
 if __name__ == '__main__':
