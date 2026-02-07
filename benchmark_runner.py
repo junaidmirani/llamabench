@@ -138,14 +138,15 @@ class BenchmarkRunner:
             print(f"{'=' * 60}")
             
             # Setup engine (skip if requested or Docker unavailable)
-            if not self.skip_setup and self.docker_client:
+            # Setup engine (skip if requested)
+            if not self.skip_setup:
                 print(f"⏳ Setting up {engine}...")
                 try:
                     self._setup_engine(engine)
                     print(f"✅ {engine} ready")
                 except Exception as e:
                     print(f"❌ Failed to setup {engine}: {e}")
-                    print(f"⚠️  Using mock data for {engine}")
+                    continue
             else:
                 print(f"⚠️  Skipping setup - using mock data")
             
