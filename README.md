@@ -1,4 +1,4 @@
-```markdown
+
 # llamabench
 
 > **Production-grade benchmarking for LLM inference engines**  
@@ -14,7 +14,7 @@ llamabench setup --engine llama.cpp --model llama-3.1-8b
 llamabench run --model llama-3.1-8b --engines llama.cpp --concurrency 1,10,50
 ```
 
----
+
 
 ## Why llamabench?
 
