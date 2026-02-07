@@ -168,9 +168,7 @@ class BenchmarkRunner:
                     
                 except Exception as e:
                     print(f"  ❌ Benchmark failed: {e}")
-                    # Add mock data for demo
-                    benchmark_result = self._generate_mock_result(engine, concurrency)
-                    results['benchmarks'].append(benchmark_result)
+                    
             
             # Cleanup
             if not self.skip_setup and self.docker_client:
