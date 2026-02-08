@@ -191,8 +191,7 @@ class BenchmarkRunner:
         """Stop and cleanup an engine"""
         pass
     
-   def _run_benchmark(self, engine: str, concurrency: int) -> Dict[str, Any]:
-       """Run benchmark for a specific engine and concurrency level"""
+   def _run_benchmark(self, engine: str, concurrency: int) -> Dict[str, Any]:      """Run benchmark for a specific engine and concurrency level"""
         
         if not REAL_BENCHMARKING_AVAILABLE:
             raise RuntimeError("Real benchmarking not available. Install: pip install aiohttp")
