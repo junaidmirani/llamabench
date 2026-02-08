@@ -25,7 +25,7 @@ except ImportError:
     docker = None
 
 from config import (
-    SUPPORTED_MODELS, ENGINE_CONFIGS, PRESETS, 
+    SUPPORTED_MODELS, ENGINE_CONFIGS, PRESETS,
     BENCHMARK_PROMPTS, DEFAULT_PROMPT
 )
 
@@ -38,7 +38,7 @@ except ImportError:
 
 class BenchmarkRunner:
     """Runs benchmarks across multiple engines and concurrency levels"""
-    
+
     def __init__(
         self,
         model: str,
@@ -57,7 +57,7 @@ class BenchmarkRunner:
         self.preset = preset
         self.custom_prompt = custom_prompt
         self.skip_setup = skip_setup
-        
+
         # Apply preset if specified
         if preset and preset in PRESETS:
             preset_config = PRESETS[preset]
@@ -66,16 +66,17 @@ class BenchmarkRunner:
             self.prompt_style = preset_config['prompt_style']
         else:
             self.prompt_style = 'mixed'
-        
+
         # Get prompts
         if custom_prompt:
             self.prompts = [custom_prompt]
         else:
-            self.prompts = BENCHMARK_PROMPTS.get(self.prompt_style, [DEFAULT_PROMPT])
-        
+            self.prompts = BENCHMARK_PROMPTS.get(
+                self.prompt_style, [DEFAULT_PROMPT])
+
         # System info
         self.system_info = self._get_system_info()
-        
+
         # Docker client
         if docker:
             try:
@@ -86,7 +87,7 @@ class BenchmarkRunner:
         else:
             self.docker_client = None
             print("ℹ️  Running in demo mode with simulated data")
-    
+
     def _get_system_info(self) -> Dict[str, Any]:
         """Gather system information"""
         if psutil:
@@ -95,7 +96,7 @@ class BenchmarkRunner:
         else:
             cpu_count = os.cpu_count() or 4
             memory_gb = 8.0
-        
+
         return {
             'cpu_count': cpu_count,
             'cpu_model': 'Unknown',  # Would need platform-specific code
@@ -103,19 +104,19 @@ class BenchmarkRunner:
             'gpu_available': self._check_gpu(),
             'timestamp': datetime.utcnow().isoformat(),
         }
-    
+
     def _check_gpu(self) -> bool:
         """Check if GPU is available"""
         try:
             result = subprocess.run(
-                ['nvidia-smi'], 
-                capture_output=True, 
+                ['nvidia-smi'],
+                capture_output=True,
                 timeout=5
             )
             return result.returncode == 0
         except:
             return False
-    
+
     def run(self) -> Dict[str, Any]:
         """Run all benchmarks"""
         results = {
@@ -131,12 +132,12 @@ class BenchmarkRunner:
             },
             'benchmarks': []
         }
-        
+
         for engine in self.engines:
             print(f"\n{'=' * 60}")
             print(f"🔧 Testing {engine}")
             print(f"{'=' * 60}")
-            
+
             # Setup engine (skip if requested or Docker unavailable)
             # Setup engine (skip if requested)
             if not self.skip_setup:
@@ -149,57 +150,61 @@ class BenchmarkRunner:
                     continue
             else:
                 print(f"⚠️  Skipping setup - using mock data")
-            
+
             # Run benchmarks for each concurrency level
             for concurrency in self.concurrency_levels:
                 print(f"\n  📊 Concurrency: {concurrency}")
                 print(f"  ⏱️  Duration: {self.duration}s")
-                
+
                 try:
                     benchmark_result = self._run_benchmark(
-                        engine, 
+                        engine,
                         concurrency
                     )
                     results['benchmarks'].append(benchmark_result)
-                    
+
                     # Print quick summary
-                    print(f"  ✅ TTFT: {benchmark_result['metrics']['ttft_p50']:.3f}s")
-                    print(f"  ✅ Throughput: {benchmark_result['metrics']['tokens_per_sec']:.1f} tok/s")
-                    print(f"  ✅ Memory: {benchmark_result['metrics']['memory_mb']:.0f} MB")
-                    
+                    print(
+                        f"  ✅ TTFT: {benchmark_result['metrics']['ttft_p50']:.3f}s")
+                    print(
+                        f"  ✅ Throughput: {benchmark_result['metrics']['tokens_per_sec']:.1f} tok/s")
+                    print(
+                        f"  ✅ Memory: {benchmark_result['metrics']['memory_mb']:.0f} MB")
+
                 except Exception as e:
                     print(f"  ❌ Benchmark failed: {e}")
-                    
-            
+
             # Cleanup
             if not self.skip_setup and self.docker_client:
                 try:
                     self._cleanup_engine(engine)
                 except:
                     pass
-        
+
         return results
-    
+
     def _setup_engine(self, engine: str):
         """Setup and start an engine"""
         from engine_setup import EngineSetup
-        
+
         setup = EngineSetup()
         setup.setup(engine, self.model)
-    
+
     def _cleanup_engine(self, engine: str):
         """Stop and cleanup an engine"""
         pass
-    
-   def _run_benchmark(self, engine: str, concurrency: int) -> Dict[str, Any]:      """Run benchmark for a specific engine and concurrency level"""
-        
+
+    def _run_benchmark(self, engine: str, concurrency: int) -> Dict[str, Any]:
+        """Run benchmark for a specific engine and concurrency level"""
+
         if not REAL_BENCHMARKING_AVAILABLE:
-            raise RuntimeError("Real benchmarking not available. Install: pip install aiohttp")
-        
+            raise RuntimeError(
+                "Real benchmarking not available. Install: pip install aiohttp")
+
         # Get engine config
         config = ENGINE_CONFIGS[engine]
         base_url = f"http://localhost:{config['port']}"
-        
+
         # Run real benchmark
         real_results = run_benchmark_sync(
             engine=engine,
@@ -209,13 +214,14 @@ class BenchmarkRunner:
             concurrency=concurrency,
             duration=self.duration
         )
-        
+
         if not real_results:
-            raise RuntimeError(f"{engine} is not responding on {base_url}. Is it running?")
-        
+            raise RuntimeError(
+                f"{engine} is not responding on {base_url}. Is it running?")
+
         # Get memory usage
         memory_mb = self._get_memory_usage()
-        
+
         # Format results
         return {
             'engine': engine,
@@ -234,18 +240,16 @@ class BenchmarkRunner:
             },
             'timestamp': datetime.utcnow().isoformat(),
         }
-    
+
     def _get_memory_usage(self) -> float:
         """Get current memory usage in MB"""
         if psutil:
             process = psutil.Process()
             return round(process.memory_info().rss / (1024 * 1024), 0)
         return 5000  # Default estimate
-    
+
     def _get_cpu_usage(self) -> float:
         """Get current CPU usage percentage"""
         if psutil:
             return round(psutil.cpu_percent(interval=0.1), 1)
         return 75.0  # Default estimate
-    
-  
