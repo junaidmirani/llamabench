@@ -4,7 +4,6 @@ Benchmark runner - orchestrates testing across different engines
 
 import time
 import subprocess
-import random
 from typing import List, Dict, Any
 from datetime import datetime
 import os
@@ -83,10 +82,8 @@ class BenchmarkRunner:
                 self.docker_client = docker.from_env()
             except:
                 self.docker_client = None
-                print("⚠️  Docker not available - will use mock data for demo")
         else:
             self.docker_client = None
-            print("ℹ️  Running in demo mode with simulated data")
 
     def _get_system_info(self) -> Dict[str, Any]:
         """Gather system information"""
@@ -99,7 +96,7 @@ class BenchmarkRunner:
 
         return {
             'cpu_count': cpu_count,
-            'cpu_model': 'Unknown',  # Would need platform-specific code
+            'cpu_model': 'Unknown',
             'memory_gb': memory_gb,
             'gpu_available': self._check_gpu(),
             'timestamp': datetime.utcnow().isoformat(),
@@ -138,7 +135,6 @@ class BenchmarkRunner:
             print(f"🔧 Testing {engine}")
             print(f"{'=' * 60}")
 
-            # Setup engine (skip if requested or Docker unavailable)
             # Setup engine (skip if requested)
             if not self.skip_setup:
                 print(f"⏳ Setting up {engine}...")
@@ -148,8 +144,6 @@ class BenchmarkRunner:
                 except Exception as e:
                     print(f"❌ Failed to setup {engine}: {e}")
                     continue
-            else:
-                print(f"⚠️  Skipping setup - using mock data")
 
             # Run benchmarks for each concurrency level
             for concurrency in self.concurrency_levels:
@@ -173,9 +167,10 @@ class BenchmarkRunner:
 
                 except Exception as e:
                     print(f"  ❌ Benchmark failed: {e}")
+                    raise
 
             # Cleanup
-            if not self.skip_setup and self.docker_client:
+            if not self.skip_setup:
                 try:
                     self._cleanup_engine(engine)
                 except:
@@ -246,10 +241,10 @@ class BenchmarkRunner:
         if psutil:
             process = psutil.Process()
             return round(process.memory_info().rss / (1024 * 1024), 0)
-        return 5000  # Default estimate
+        return 5000
 
     def _get_cpu_usage(self) -> float:
         """Get current CPU usage percentage"""
         if psutil:
             return round(psutil.cpu_percent(interval=0.1), 1)
-        return 75.0  # Default estimate
+        return 75.0
